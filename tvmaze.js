@@ -16,7 +16,6 @@ async function getShowsByTerm(term) {
   let shows = await axios.get(`http://api.tvmaze.com/search/shows?q=${term}`);
   let showsArr = [];
   for (let { show } of shows.data) {
-    console.log(show);
     let newShow = {
       id: show.id,
       name: show.name,
@@ -36,14 +35,13 @@ async function getShowsByTerm(term) {
 
 function populateShows(shows) {
   $showsList.empty();
-  console.log(shows);
   for (let show of shows) {
     const $show = $(
       `<div data-show-id="${show.id}" class="Show col-md-12 col-lg-6 mb-4">
          <div class="media">
            <img 
               src="${show.image}" 
-              alt="https://tinyurl.com/tv-missing" 
+              alt="" 
               class="w-25 mr-3">
            <div class="media-body">
              <h5 class="text-primary">${show.name}</h5>
@@ -84,7 +82,6 @@ $searchForm.on("submit", async function (evt) {
 
 async function getEpisodesOfShow(id) {
   let episodes = await axios.get(`http://api.tvmaze.com/shows/${id}/episodes`);
-  console.log(episodes);
   let episodeArr = [];
   for (let episode of episodes.data) {
     let newEpisode = {
@@ -94,8 +91,6 @@ async function getEpisodesOfShow(id) {
       number: episode.number,
     };
     episodeArr.push(newEpisode);
-
-    console.log(episode);
   }
   return episodeArr;
 }
@@ -103,20 +98,23 @@ async function getEpisodesOfShow(id) {
 /** Write a clear docstring for this function... */
 
 function populateEpisodes(episodes) {
-  console.log(episodes);
-  for (let show of episodes) {
-    const $show = $(
-      `<li> ${show.name} (season ${show.season}, number ${show.number}) </li>`
+  $("#episodesList").text("");
+  for (let episode of episodes) {
+    const $episode = $(
+      `<li> ${episode.name} (season ${episode.season}, number ${episode.number}) </li>`
     );
 
-    $("#episodesList").append($show);
+    $("#episodesList").append($episode);
   }
 }
 
-async function searchForEpisodesAndDisplay() {
-  let episodes = await getEpisodesOfShow($("#data-show-id").attr());
+async function searchForEpisodesAndDisplay(id) {
+  let episodes = await getEpisodesOfShow(id);
   populateEpisodes(episodes);
   $episodesArea.show();
 }
 
-$(".Show-getEpisodes").on("click", searchForEpisodesAndDisplay);
+$(".container").on("click",".Show-getEpisodes" , async function (evt) {
+  let id = $(evt.target.closest(".Show")).data("show-id");
+  await searchForEpisodesAndDisplay(id)
+});
